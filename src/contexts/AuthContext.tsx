@@ -41,11 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      // Use a default locale and let the callback handle locale detection
+      if (typeof window === 'undefined') return;
+      
+      // Get current locale from URL
+      const currentLocale = window.location.pathname.split('/')[1] || 'cs';
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`
+          redirectTo: `${window.location.origin}/auth/callback?locale=${currentLocale}`
         }
       });
       if (error) throw error;

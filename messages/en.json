@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "navigation": {
+    "home": "Home",
+    "cookbook": "My Cookbook",
+    "language": "Language"
+  },
+  "home": {
+    "title": "Recipe Simplifier",
+    "subtitle": "Paste a recipe URL and get a clean, distraction-free recipe",
+    "urlPlaceholder": "Enter recipe URL...",
+    "simplifyButton": "Simplify Recipe",
+    "loading": "Parsing recipe...",
+    "error": "Failed to parse recipe. Please try again.",
+    "urlLabel": "Recipe URL",
+    "features": {
+      "cleanRecipes": {
+        "title": "Clean Recipes",
+        "description": "Get distraction-free recipes with just the ingredients and steps you need."
+      },
+      "multiLanguage": {
+        "title": "Multi-Language",
+        "description": "Available in English and Czech, with more languages coming soon."
+      },
+      "saveOrganize": {
+        "title": "Save & Organize",
+        "description": "Save your favorite recipes to your personal cookbook for easy access."
+      }
+    },
+    "savedRecipes": {
+      "title": "Your Saved Recipes",
+      "viewAll": "View All",
+      "empty": "No saved recipes yet",
+      "emptyDescription": "Start by simplifying some recipes to build your collection"
+    }
+  },
+  "recipe": {
+    "ingredients": "Ingredients",
+    "instructions": "Instructions",
+    "servings": "Servings",
+    "prepTime": "Prep Time",
+    "cookTime": "Cook Time",
+    "totalTime": "Total Time",
+    "saveRecipe": "Save Recipe",
+    "saved": "Recipe saved!",
+    "saveError": "Failed to save recipe",
+    "back": "Back",
+    "loadingRecipe": "Loading recipe...",
+    "view": "View Recipe",
+    "print": "Print",
+    "share": "Share",
+    "save": "Save",
+    "loading": "Loading...",
+    "notFound": "Recipe Not Found",
+    "notFoundDescription": "The recipe you're looking for doesn't exist or has been removed.",
+    "backToHome": "Back to Home"
+  },
+  "cookbook": {
+    "title": "My Cookbook",
+    "empty": "No saved recipes yet",
+    "emptyDescription": "Start by simplifying some recipes to build your cookbook",
+    "deleteRecipe": "Delete Recipe",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "delete": "Delete",
+    "addRecipe": "Add Recipe",
+    "startAdding": "Start Adding Recipes",
+    "searchPlaceholder": "Search recipes by name or ingredients...",
+    "noResults": "No recipes found",
+    "noResultsDescription": "No recipes match \"{searchTerm}\". Try a different search term."
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signInWithGoogle": "Sign in with Google",
+    "signInRequired": "Please sign in to save recipes",
+    "errorTitle": "Authentication Error",
+    "errorMessage": "There was an error signing you in. Please try again.",
+    "backToHome": "Back to Home",
+    "welcome": "Welcome back!",
+    "signInToSave": "Sign in to save recipes to your cookbook"
+  }
+}

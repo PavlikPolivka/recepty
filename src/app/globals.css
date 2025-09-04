@@ -24,3 +24,233 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Print styles for recipe pages only */
+@media print {
+  /* Only apply print styles to recipe pages */
+  .recipe-print-container {
+    /* Hide header and navigation elements only on recipe pages */
+  }
+  
+  .recipe-print-container header {
+    display: none !important;
+  }
+  
+  /* Hide print button and other UI elements */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Ensure the recipe content takes full width */
+  .recipe-print-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 2px !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Optimize the two-column layout for print */
+  .recipe-print-content {
+    display: grid !important;
+    grid-template-columns: 0.8fr 1.2fr !important;
+    gap: 4px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: auto !important;
+  }
+  
+  /* Recipe header styling for print */
+  .recipe-print-header {
+    grid-column: 1 / -1 !important;
+    margin-bottom: 2px !important;
+    padding-bottom: 2px !important;
+    border-bottom: 1px solid #000 !important;
+    page-break-after: auto !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .recipe-print-title {
+    font-size: 14px !important;
+    font-weight: bold !important;
+    margin-bottom: 1px !important;
+    color: #000 !important;
+    page-break-after: avoid !important;
+  }
+  
+  .recipe-print-image {
+    display: none !important;
+  }
+  
+  .recipe-print-meta {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    font-size: 9px !important;
+    color: #333 !important;
+    margin-bottom: 1px !important;
+    page-break-after: avoid !important;
+  }
+  
+  /* Ingredients column */
+  .recipe-print-ingredients {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    orphans: 2 !important;
+    widows: 2 !important;
+  }
+  
+  .recipe-print-ingredients h2 {
+    font-size: 10px !important;
+    font-weight: bold !important;
+    margin-bottom: 1px !important;
+    color: #000 !important;
+    border-bottom: 1px solid #ccc !important;
+    padding-bottom: 0px !important;
+  }
+  
+  .recipe-print-ingredients ul {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .recipe-print-ingredients li {
+    margin-bottom: 0px !important;
+    padding: 0px 0 !important;
+    font-size: 8px !important;
+    line-height: 1.0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  /* Show checkboxes in print version */
+  .recipe-print-ingredients input[type="checkbox"] {
+    display: inline-block !important;
+    width: 6px !important;
+    height: 6px !important;
+    margin-right: 3px !important;
+    margin-top: 0px !important;
+    border: 1px solid #000 !important;
+    background: white !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+  
+  .recipe-print-ingredients input[type="checkbox"]:checked {
+    background: #000 !important;
+    position: relative !important;
+  }
+  
+  .recipe-print-ingredients input[type="checkbox"]:checked::after {
+    content: "✓" !important;
+    position: absolute !important;
+    top: -1px !important;
+    left: 1px !important;
+    color: white !important;
+    font-size: 6px !important;
+    font-weight: bold !important;
+  }
+  
+  /* Instructions column */
+  .recipe-print-instructions {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+    orphans: 2 !important;
+    widows: 2 !important;
+  }
+  
+  .recipe-print-instructions h2 {
+    font-size: 12px !important;
+    font-weight: bold !important;
+    margin-bottom: 2px !important;
+    color: #000 !important;
+    border-bottom: 1px solid #ccc !important;
+    padding-bottom: 1px !important;
+  }
+  
+  .recipe-print-instructions ol {
+    padding-left: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .recipe-print-instructions li {
+    margin-bottom: 1px !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .recipe-print-step-number {
+    background: #f0f0f0 !important;
+    border: 1px solid #ccc !important;
+    border-radius: 50% !important;
+    width: 12px !important;
+    height: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 6px !important;
+    font-weight: bold !important;
+    margin-right: 4px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .recipe-print-step-text {
+    flex: 1 !important;
+  }
+  
+  /* General print optimizations - only for recipe pages */
+  .recipe-print-container * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  .recipe-print-container body {
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    color: #000 !important;
+    background: white !important;
+  }
+  
+  /* Page breaks */
+  .page-break {
+    page-break-before: always !important;
+  }
+  
+  /* Avoid breaking inside important elements */
+  .recipe-print-ingredients,
+  .recipe-print-instructions {
+    page-break-inside: avoid !important;
+  }
+  
+  /* Force everything to stay on one page */
+  .recipe-print-container > div {
+    page-break-inside: avoid !important;
+  }
+  
+  /* Prevent page breaks between header and content */
+  .recipe-print-header + .recipe-print-content {
+    page-break-before: avoid !important;
+  }
+  
+  /* Aggressive page break prevention */
+  .recipe-print-container,
+  .recipe-print-container * {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  
+  /* Force single page layout */
+  .recipe-print-container {
+    height: auto !important;
+    max-height: 100vh !important;
+    overflow: visible !important;
+  }
+}

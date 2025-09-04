@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Načítání...",
+    "error": "Chyba",
+    "save": "Uložit",
+    "cancel": "Zrušit",
+    "close": "Zavřít",
+    "back": "Zpět",
+    "next": "Další",
+    "previous": "Předchozí"
+  },
+  "navigation": {
+    "home": "Domů",
+    "cookbook": "Můj receptář",
+    "language": "Jazyk"
+  },
+  "home": {
+    "title": "Zjednodušovač receptů",
+    "subtitle": "Vložte URL receptu a získejte čistý recept bez rušivých elementů",
+    "urlPlaceholder": "Zadejte URL receptu...",
+    "simplifyButton": "Zjednodušit recept",
+    "loading": "Zpracovávám recept...",
+    "error": "Nepodařilo se zpracovat recept. Zkuste to prosím znovu.",
+    "urlLabel": "URL receptu",
+    "features": {
+      "cleanRecipes": {
+        "title": "Čisté recepty",
+        "description": "Získejte recepty bez rušivých elementů s pouze ingrediencemi a kroky, které potřebujete."
+      },
+      "multiLanguage": {
+        "title": "Vícejazyčnost",
+        "description": "Dostupné v angličtině a češtině, další jazyky již brzy."
+      },
+      "saveOrganize": {
+        "title": "Uložit a organizovat",
+        "description": "Uložte si své oblíbené recepty do osobního receptáře pro snadný přístup."
+      }
+    },
+    "savedRecipes": {
+      "title": "Vaše uložené recepty",
+      "viewAll": "Zobrazit vše",
+      "empty": "Zatím žádné uložené recepty",
+      "emptyDescription": "Začněte zjednodušováním receptů a vytvořte si svou sbírku"
+    }
+  },
+  "recipe": {
+    "ingredients": "Ingredience",
+    "instructions": "Postup",
+    "servings": "Porce",
+    "prepTime": "Příprava",
+    "cookTime": "Vaření",
+    "totalTime": "Celkový čas",
+    "saveRecipe": "Uložit recept",
+    "saved": "Recept uložen!",
+    "saveError": "Nepodařilo se uložit recept",
+    "back": "Zpět",
+    "loadingRecipe": "Načítám recept...",
+    "view": "Zobrazit recept",
+    "print": "Tisknout",
+    "share": "Sdílet",
+    "save": "Uložit",
+    "loading": "Načítání...",
+    "notFound": "Recept nenalezen",
+    "notFoundDescription": "Recept, který hledáte, neexistuje nebo byl odstraněn.",
+    "backToHome": "Zpět na hlavní stránku"
+  },
+  "cookbook": {
+    "title": "Můj receptář",
+    "empty": "Zatím žádné uložené recepty",
+    "emptyDescription": "Začněte zjednodušováním receptů a vytvořte si svůj receptář",
+    "deleteRecipe": "Smazat recept",
+    "deleteConfirm": "Opravdu chcete smazat tento recept?",
+    "delete": "Smazat",
+    "addRecipe": "Přidat recept",
+    "startAdding": "Začít přidávat recepty",
+    "searchPlaceholder": "Hledat recepty podle názvu nebo ingrediencí...",
+    "noResults": "Žádné recepty nenalezeny",
+    "noResultsDescription": "Žádné recepty neodpovídají \"{searchTerm}\". Zkuste jiný vyhledávací termín."
+  },
+  "auth": {
+    "signIn": "Přihlásit se",
+    "signOut": "Odhlásit se",
+    "signInWithGoogle": "Přihlásit se přes Google",
+    "signInRequired": "Pro uložení receptů se prosím přihlaste",
+    "errorTitle": "Chyba přihlášení",
+    "errorMessage": "Při přihlašování došlo k chybě. Zkuste to prosím znovu.",
+    "backToHome": "Zpět na hlavní stránku",
+    "welcome": "Vítejte zpět!",
+    "signInToSave": "Přihlaste se pro ukládání receptů do vašeho receptáře"
+  }
+}

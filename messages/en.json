@@ -22,6 +22,9 @@
     "loading": "Parsing recipe...",
     "error": "Failed to parse recipe. Please try again.",
     "urlLabel": "Recipe URL",
+    "instructionsLabel": "Recipe Modifications (Optional)",
+    "instructionsPlaceholder": "Type to add custom instructions...",
+    "instructionsHelp": "Select from suggestions or add your own. Tell the AI how you'd like the recipe to be modified.",
     "features": {
       "cleanRecipes": {
         "title": "Clean Recipes",
@@ -62,7 +65,8 @@
     "loading": "Loading...",
     "notFound": "Recipe Not Found",
     "notFoundDescription": "The recipe you're looking for doesn't exist or has been removed.",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "editTitle": "Edit Title"
   },
   "cookbook": {
     "title": "My Cookbook",

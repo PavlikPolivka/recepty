@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { ChefHat, Globe, Loader2, Eye, Trash2, BookOpen } from 'lucide-react';
 import AuthButton from '@/components/AuthButton';
+import InstructionsInput from '@/components/InstructionsInput';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import { SavedRecipe } from '@/types/database';
@@ -16,6 +17,7 @@ export default function HomePage() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [url, setUrl] = useState('');
+  const [instructions, setInstructions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
@@ -110,7 +112,7 @@ export default function HomePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url, locale: currentLocale }),
+        body: JSON.stringify({ url, instructions: instructions.join('; '), locale: currentLocale }),
       });
 
       if (!response.ok) {
@@ -222,6 +224,12 @@ export default function HomePage() {
                 />
               </div>
             </div>
+
+            <InstructionsInput
+              value={instructions}
+              onChange={setInstructions}
+              locale={currentLocale}
+            />
 
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">

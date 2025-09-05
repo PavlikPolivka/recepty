@@ -22,6 +22,9 @@
     "loading": "Zpracovávám recept...",
     "error": "Nepodařilo se zpracovat recept. Zkuste to prosím znovu.",
     "urlLabel": "URL receptu",
+    "instructionsLabel": "Úpravy receptu (volitelné)",
+    "instructionsPlaceholder": "Napište pro přidání vlastních instrukcí...",
+    "instructionsHelp": "Vyberte z návrhů nebo přidejte vlastní. Řekněte AI, jak chcete recept upravit.",
     "features": {
       "cleanRecipes": {
         "title": "Čisté recepty",
@@ -62,7 +65,8 @@
     "loading": "Načítání...",
     "notFound": "Recept nenalezen",
     "notFoundDescription": "Recept, který hledáte, neexistuje nebo byl odstraněn.",
-    "backToHome": "Zpět na hlavní stránku"
+    "backToHome": "Zpět na hlavní stránku",
+    "editTitle": "Upravit název"
   },
   "cookbook": {
     "title": "Můj receptář",

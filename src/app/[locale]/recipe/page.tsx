@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { ChefHat, Clock, Users, ArrowLeft, Save, Check, Printer } from 'lucide-react';
+import { ChefHat, Clock, Users, ArrowLeft, Save, Check, Printer, Edit2, X } from 'lucide-react';
 import { ParsedRecipe } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -15,8 +15,9 @@ export default function RecipePage() {
   const { user } = useAuth();
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
-  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState('');
 
   useEffect(() => {
     // Only access sessionStorage on the client side
@@ -64,7 +65,7 @@ export default function RecipePage() {
         // Continue anyway, the trigger might have already created the user
       }
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('recipes')
         .insert({
           user_id: user.id,
@@ -76,12 +77,16 @@ export default function RecipePage() {
           prep_time: recipe.prep_time,
           cook_time: recipe.cook_time,
           total_time: recipe.total_time,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      // Redirect to the shareable recipe page
+      if (data?.id) {
+        router.push(`/${locale}/recipe/${data.id}`);
+      }
     } catch (error) {
       console.error('Error saving recipe:', error);
       // You could add a toast notification here
@@ -93,6 +98,41 @@ export default function RecipePage() {
   const handlePrint = () => {
     if (typeof window !== 'undefined') {
       window.print();
+    }
+  };
+
+  const startEditingTitle = () => {
+    if (recipe) {
+      setEditedTitle(recipe.title);
+      setIsEditingTitle(true);
+    }
+  };
+
+  const saveTitle = () => {
+    if (recipe && editedTitle.trim()) {
+      const updatedRecipe = { ...recipe, title: editedTitle.trim() };
+      setRecipe(updatedRecipe);
+      
+      // Update sessionStorage with the new title
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('currentRecipe', JSON.stringify(updatedRecipe));
+      }
+      
+      setIsEditingTitle(false);
+    }
+  };
+
+  const cancelEditingTitle = () => {
+    setEditedTitle('');
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveTitle();
+    } else if (e.key === 'Escape') {
+      cancelEditingTitle();
     }
   };
 
@@ -132,27 +172,21 @@ export default function RecipePage() {
               
               <button
                 onClick={handleSave}
-                disabled={saving || saved}
+                disabled={saving}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  saved
-                    ? 'bg-green-100 text-green-700'
-                    : user
+                  user
                     ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
                     : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 {saving ? (
                   <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
-                ) : saved ? (
-                  <Check className="h-4 w-4" />
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
                 <span>
                   {saving
                     ? t('common.loading')
-                    : saved
-                    ? t('recipe.saved')
                     : user
                     ? t('recipe.saveRecipe')
                     : t('auth.signInRequired')}
@@ -168,9 +202,49 @@ export default function RecipePage() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Recipe Header */}
           <div className="p-6 border-b border-gray-200 recipe-print-header">
-            <h1 className="text-2xl font-bold text-gray-900 mb-3 recipe-print-title">
-              {recipe.title}
-            </h1>
+            <div className="mb-3">
+              {isEditingTitle ? (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onKeyDown={handleTitleKeyPress}
+                    className="text-2xl font-bold text-gray-900 bg-transparent border-b-2 border-orange-500 focus:outline-none focus:border-orange-600 w-full"
+                    autoFocus
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={saveTitle}
+                      className="p-2 text-green-600 hover:bg-green-100 rounded"
+                      title={t('common.save')}
+                    >
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={cancelEditingTitle}
+                      className="p-2 text-red-600 hover:bg-red-100 rounded"
+                      title={t('common.cancel')}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <h1 className="text-2xl font-bold text-gray-900 recipe-print-title">
+                    {recipe.title}
+                  </h1>
+                  <button
+                    onClick={startEditingTitle}
+                    className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded no-print"
+                    title={t('recipe.editTitle')}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
             
             {recipe.image && (
               <div className="mb-4">

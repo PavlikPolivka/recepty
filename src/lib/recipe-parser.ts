@@ -6,7 +6,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function parseRecipeFromUrl(url: string, locale: string = 'en', instructions: string = ''): Promise<ParsedRecipe> {
   try {
-    // First, try to fetch the page and look for schema.org JSON-LD
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; RecipeSimplifier/1.0)',
@@ -20,29 +19,7 @@ export async function parseRecipeFromUrl(url: string, locale: string = 'en', ins
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Try to find schema.org Recipe JSON-LD
-    const jsonLdScripts = $('script[type="application/ld+json"]');
-    let recipeData: Record<string, unknown> | null = null;
-
-    jsonLdScripts.each((_, script) => {
-      try {
-        const jsonData = JSON.parse($(script).html() || '');
-        if (Array.isArray(jsonData)) {
-          recipeData = jsonData.find((item: Record<string, unknown>) => item['@type'] === 'Recipe');
-        } else if (jsonData['@type'] === 'Recipe') {
-          recipeData = jsonData;
-        }
-      } catch {
-        // Ignore invalid JSON
-      }
-    });
-
-    if (recipeData && !instructions.trim()) {
-      // Use schema.org data only if no custom instructions provided
-      return parseSchemaOrgRecipe(recipeData, $, url);
-    }
-
-    // Use Gemini AI parsing (either as fallback or for custom instructions)
+    // Always use Gemini AI parsing for consistent tag generation
     return await parseWithGemini(html, url, locale, instructions);
   } catch (error) {
     console.error('Error parsing recipe:', error);
@@ -50,69 +27,6 @@ export async function parseRecipeFromUrl(url: string, locale: string = 'en', ins
   }
 }
 
-function parseSchemaOrgRecipe(data: Record<string, unknown>, $: cheerio.Root, url: string): ParsedRecipe {
-  const ingredients: Ingredient[] = [];
-  
-  if (data.recipeIngredient && Array.isArray(data.recipeIngredient)) {
-    (data.recipeIngredient as string[]).forEach((ingredient: string) => {
-      // Simple parsing - could be improved
-      const parts = ingredient.split(' ');
-      if (parts.length >= 2) {
-        ingredients.push({
-          amount: parts[0],
-          unit: parts[1],
-          name: parts.slice(2).join(' '),
-        });
-      } else {
-        ingredients.push({
-          name: ingredient,
-        });
-      }
-    });
-  }
-
-  const steps: RecipeStep[] = [];
-  if (data.recipeInstructions && Array.isArray(data.recipeInstructions)) {
-    (data.recipeInstructions as (string | { text: string })[]).forEach((instruction: string | { text: string }, index: number) => {
-      if (typeof instruction === 'string') {
-        steps.push({
-          step: index + 1,
-          instruction: instruction,
-        });
-      } else if (instruction && typeof instruction === 'object' && 'text' in instruction) {
-        steps.push({
-          step: index + 1,
-          instruction: instruction.text,
-        });
-      }
-    });
-  }
-
-  // Try to get image from schema.org first, fallback to our improved extraction
-  let image: string | undefined;
-  if (data.image) {
-    const schemaImage = Array.isArray(data.image) ? (data.image[0] as string) : (data.image as string);
-    if (schemaImage && typeof schemaImage === 'string' && schemaImage.startsWith('http')) {
-      image = schemaImage;
-    }
-  }
-  
-  // If no valid image from schema.org, use our improved extraction
-  if (!image && url) {
-    image = extractBestImage($, url);
-  }
-
-  return {
-    title: (data.name as string) || 'Untitled Recipe',
-    image,
-    ingredients,
-    steps,
-    servings: data.recipeYield as number,
-    prep_time: data.prepTime as string,
-    cook_time: data.cookTime as string,
-    total_time: data.totalTime as string,
-  };
-}
 
 function extractBestImage($: cheerio.Root, url: string): string | undefined {
   try {

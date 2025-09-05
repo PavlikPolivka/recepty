@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { ChefHat, Globe, Loader2, Eye, Trash2, BookOpen } from 'lucide-react';
 import AuthButton from '@/components/AuthButton';
 import InstructionsInput from '@/components/InstructionsInput';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { createClient } from '@/lib/supabase/client';
 import { SavedRecipe } from '@/types/database';
 
@@ -16,6 +18,7 @@ export default function HomePage() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
+  const { subscription, usage, canParseRecipe, canUseCustomizations, maxRecipesPerDay, maxCustomizationsPerDay } = useSubscription();
   const [url, setUrl] = useState('');
   const [instructions, setInstructions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,14 +106,37 @@ export default function HomePage() {
     e.preventDefault();
     if (!url.trim()) return;
 
+    // Check if user can parse recipe
+    if (!canParseRecipe) {
+      setError('Daily recipe limit reached. Upgrade to premium for unlimited recipes.');
+      return;
+    }
+
+    // Check customization limits
+    const customizationCount = instructions.length;
+    if (customizationCount > 0 && !canUseCustomizations(customizationCount)) {
+      setError('Daily customization limit reached. Upgrade to premium for unlimited customizations.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
+      // Get the session token for authentication
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setError(t('home.signInToParse'));
+        return;
+      }
+
       const response = await fetch('/api/parse-recipe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ url, instructions: instructions.join('; '), locale: currentLocale }),
       });
@@ -189,18 +215,42 @@ export default function HomePage() {
           <p className="text-xl text-gray-800 max-w-2xl mx-auto mb-4">
             {t('home.subtitle')}
           </p>
-          {user && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-md mx-auto">
-              <p className="text-green-800 font-medium">
-                {t('auth.welcome')} {user.user_metadata?.full_name || user.email}!
+          {!user && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-blue-900">
+                {t('auth.signInToSave')}
               </p>
             </div>
           )}
-          {!user && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
-                          <p className="text-blue-900">
-              {t('auth.signInToSave')}
-            </p>
+          
+          {/* Usage Display */}
+          {user && usage && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-2xl mx-auto mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Today's Usage</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {usage.recipes_parsed}/{maxRecipesPerDay === 999999 ? '∞' : maxRecipesPerDay}
+                  </div>
+                                       <div className="text-sm text-gray-600">{t('home.recipesParsed')}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {usage.customizations_used}/{maxCustomizationsPerDay === 999999 ? '∞' : maxCustomizationsPerDay}
+                  </div>
+                                       <div className="text-sm text-gray-600">{t('home.customizationsUsed')}</div>
+                </div>
+              </div>
+              {!subscription?.is_premium && (
+                <div className="mt-4 text-center">
+                  <Link 
+                    href={`/${currentLocale}/upgrade`}
+                    className="text-orange-600 hover:text-orange-700 font-medium"
+                  >
+                    {t('home.upgradeForUnlimited')}
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -237,20 +287,22 @@ export default function HomePage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading || !url.trim()}
-              className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-orange-700 focus:ring-4 focus:ring-orange-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>{t('home.loading')}</span>
-                </>
-              ) : (
-                <span>{t('home.simplifyButton')}</span>
-              )}
-            </button>
+                      <button
+            type="submit"
+            disabled={isLoading || !url.trim() || !user}
+            className="w-full bg-orange-600 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-orange-700 focus:ring-4 focus:ring-orange-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>{t('home.loading')}</span>
+              </>
+            ) : !user ? (
+              <span>{t('home.signInToParse')}</span>
+            ) : (
+              <span>{t('home.simplifyButton')}</span>
+            )}
+          </button>
           </form>
         </div>
 
@@ -263,8 +315,13 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-gray-900">
                   {t('home.savedRecipes.title')}
                 </h3>
+                {!subscription?.is_premium && (
+                  <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
+                    {t('home.premium')}
+                  </span>
+                )}
               </div>
-              {savedRecipes.length > 0 && (
+              {savedRecipes.length > 0 && subscription?.is_premium && (
                 <button
                   onClick={() => router.push(`/${currentLocale}/cookbook`)}
                   className="text-orange-600 hover:text-orange-700 font-medium"
@@ -278,6 +335,22 @@ export default function HomePage() {
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
                 <span className="ml-2 text-gray-600">{t('common.loading')}</span>
+              </div>
+            ) : !subscription?.is_premium ? (
+              <div className="text-center py-8">
+                <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg mb-4">
+                  {t('home.cookbookRequiresPremium')}
+                </p>
+                <p className="text-gray-400 mb-6">
+                  {t('home.upgradeToSaveUnlimited')}
+                </p>
+                <Link 
+                  href={`/${currentLocale}/upgrade`}
+                  className="inline-flex items-center px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors"
+                >
+                  {t('home.upgradeToPremium')}
+                </Link>
               </div>
             ) : savedRecipes.length === 0 ? (
               <div className="text-center py-8">

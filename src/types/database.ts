@@ -59,6 +59,118 @@ export interface Database {
           created_at?: string;
         };
       };
+      subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          status: string;
+          plan: string;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          status?: string;
+          plan?: string;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
+          status?: string;
+          plan?: string;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      usage_tracking: {
+        Row: {
+          id: string;
+          user_id: string;
+          date: string;
+          recipes_parsed: number;
+          customizations_used: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          date?: string;
+          recipes_parsed?: number;
+          customizations_used?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          date?: string;
+          recipes_parsed?: number;
+          customizations_used?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+    };
+    Functions: {
+      get_user_subscription: {
+        Args: {
+          user_uuid: string;
+        };
+        Returns: {
+          is_premium: boolean;
+          status: string;
+          plan: string;
+          current_period_end: string | null;
+        }[];
+      };
+      get_user_daily_usage: {
+        Args: {
+          user_uuid: string;
+          usage_date?: string;
+        };
+        Returns: {
+          recipes_parsed: number;
+          customizations_used: number;
+        }[];
+      };
+      increment_usage: {
+        Args: {
+          user_uuid: string;
+          usage_date?: string;
+          recipes_count?: number;
+          customizations_count?: number;
+        };
+        Returns: undefined;
+      };
+      can_parse_recipe: {
+        Args: {
+          user_uuid: string;
+        };
+        Returns: boolean;
+      };
+      can_use_customizations: {
+        Args: {
+          user_uuid: string;
+          requested_count: number;
+        };
+        Returns: boolean;
+      };
     };
   };
 }

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ChefHat, Clock, Users, ArrowLeft, Save, Check, Printer, Edit2, X } from 'lucide-react';
 import { ParsedRecipe } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { createClient } from '@/lib/supabase/client';
 
 export default function RecipePage() {
@@ -13,6 +14,7 @@ export default function RecipePage() {
   const locale = useLocale();
   const router = useRouter();
   const { user } = useAuth();
+  const { subscription } = useSubscription();
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -170,28 +172,22 @@ export default function RecipePage() {
                 <span>{t('recipe.print')}</span>
               </button>
               
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                  user
-                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                    : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                {saving ? (
-                  <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                <span>
-                  {saving
-                    ? t('common.loading')
-                    : user
-                    ? t('recipe.saveRecipe')
-                    : t('auth.signInRequired')}
-                </span>
-              </button>
+              {subscription?.is_premium && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors bg-orange-100 text-orange-700 hover:bg-orange-200"
+                >
+                  {saving ? (
+                    <div className="w-4 h-4 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  <span>
+                    {saving ? t('common.loading') : t('recipe.saveRecipe')}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </div>

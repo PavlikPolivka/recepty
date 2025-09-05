@@ -46,10 +46,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Get current locale from URL
       const currentLocale = window.location.pathname.split('/')[1] || 'cs';
       
+      // Force localhost redirect for development
+      const redirectUrl = process.env.NODE_ENV === 'development' 
+        ? `${window.location.origin}/auth/callback?locale=${currentLocale}`
+        : `${window.location.origin}/auth/callback?locale=${currentLocale}`;
+      
+      console.log('Redirecting to:', redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?locale=${currentLocale}`
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
       if (error) throw error;

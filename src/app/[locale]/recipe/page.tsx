@@ -17,7 +17,7 @@ export default function RecipePage() {
   const { subscription } = useSubscription();
   
   // Check if user has active premium subscription
-  const isPremium = subscription?.is_premium && subscription?.status === 'active';
+  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);

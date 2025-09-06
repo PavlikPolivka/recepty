@@ -19,8 +19,8 @@ export default function HomePage() {
   const { user } = useAuth();
   const { subscription, usage, canParseRecipe, canUseCustomizations, maxRecipesPerDay, maxCustomizationsPerDay } = useSubscription();
   
-  // Check if user has active premium subscription
-  const isPremium = subscription?.is_premium && subscription?.status === 'active';
+  // Check if user has active premium subscription or lifetime access
+  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
   
   // Debug logging
   useEffect(() => {
@@ -214,6 +214,14 @@ export default function HomePage() {
                   CS
                 </button>
               </div>
+              {user && isPremium && (
+                <Link
+                  href={`/${currentLocale}/cookbook`}
+                  className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors"
+                >
+                  {t('navigation.cookbook')}
+                </Link>
+              )}
               {user && (
                 <Link
                   href={`/${currentLocale}/account`}

@@ -18,12 +18,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
+    const supabase = createClient();
+    
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Getting initial session...');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('Initial session result:', { 
+        hasSession: !!session, 
+        hasUser: !!session?.user, 
+        userId: session?.user?.id,
+        error: error?.message 
+      });
       setUser(session?.user ?? null);
       setSession(session);
       setLoading(false);
@@ -34,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', { event, hasSession: !!session, hasUser: !!session?.user });
         setUser(session?.user ?? null);
         setSession(session);
         setLoading(false);
@@ -41,22 +50,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, []);
 
   const signInWithGoogle = async () => {
     try {
       if (typeof window === 'undefined') return;
+      
+      const supabase = createClient();
       
       // Get current locale from URL
       const currentLocale = window.location.pathname.split('/')[1] || 'cs';
       
       // Force localhost redirect for development
       const redirectUrl = process.env.NODE_ENV === 'development' 
-        ? `${window.location.origin}/auth/callback?locale=${currentLocale}`
-        : `${window.location.origin}/auth/callback?locale=${currentLocale}`;
+        ? `${window.location.origin}/auth/callback`
+        : `${window.location.origin}/auth/callback`;
       
       console.log('Redirecting to:', redirectUrl);
       
+      // Use PKCE flow with proper configuration
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -64,7 +76,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          }
+          },
+          flowType: 'pkce'
         }
       });
       if (error) throw error;
@@ -75,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      const supabase = createClient();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (error) {

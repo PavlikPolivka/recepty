@@ -141,8 +141,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setLoading(false);
   }, [user, refreshSubscription, refreshUsage]);
 
-  // Only allow premium features if subscription is active and premium
-  const isPremium = subscription?.is_premium && subscription?.status === 'active';
+  // Only allow premium features if subscription is active and premium, or if user has lifetime access
+  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
   
   const canParseRecipe = isPremium || (usage?.recipes_parsed || 0) < 3;
   const canUseCustomizations = (count: number) => 

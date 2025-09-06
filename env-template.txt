@@ -1,0 +1,39 @@
+# ===========================================
+# RECIPE SIMPLIFIER - ENVIRONMENT VARIABLES
+# ===========================================
+
+# ===========================================
+# REQUIRED - CORE FUNCTIONALITY
+# ===========================================
+
+# Supabase Configuration (REQUIRED)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# Google Gemini AI (REQUIRED for recipe parsing)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# ===========================================
+# REQUIRED - MONETIZATION (Stripe)
+# ===========================================
+
+# Stripe Configuration (REQUIRED for payments)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
+STRIPE_PRICE_ID=price_your_stripe_price_id_here
+STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret_here
+
+# ===========================================
+# OPTIONAL - DEPLOYMENT & SEO
+# ===========================================
+
+# App URL (OPTIONAL - defaults to localhost:3000)
+# NEXT_PUBLIC_APP_URL=https://your-domain.com
+
+# ===========================================
+# DEPRECATED - NO LONGER NEEDED
+# ===========================================
+
+# ADMIN_KEY - DEPRECATED (now using database-based admin system)
+# This variable is no longer used since we moved to database-driven admin roles

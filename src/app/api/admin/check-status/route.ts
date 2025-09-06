@@ -2,17 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { isUserAdmin } from '@/lib/admin';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const { userId } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
-    }
-
     // Get the authorization header
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -37,33 +28,16 @@ export async function POST(request: NextRequest) {
 
     // Check if user is admin
     const isAdmin = await isUserAdmin(user.id);
-    if (!isAdmin) {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-
-    // Grant lifetime access
-    const { error } = await supabase.rpc('grant_lifetime_access', {
-      user_uuid: userId,
-      granted_by: 'admin'
-    });
-
-    if (error) {
-      console.error('Error granting lifetime access:', error);
-      return NextResponse.json(
-        { error: 'Failed to grant lifetime access' },
-        { status: 500 }
-      );
-    }
 
     return NextResponse.json({ 
-      success: true, 
-      message: 'Lifetime access granted successfully' 
+      isAdmin,
+      user: {
+        id: user.id,
+        email: user.email
+      }
     });
   } catch (error) {
-    console.error('Error in grant-lifetime API:', error);
+    console.error('Error in check-status API:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

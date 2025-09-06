@@ -16,6 +16,12 @@ export async function POST(request: NextRequest) {
     // Retrieve the session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
+    console.log('Retrieved session:', {
+      id: session.id,
+      payment_status: session.payment_status,
+      subscription: session.subscription
+    });
+
     if (session.payment_status !== 'paid') {
       return NextResponse.json(
         { error: 'Payment not completed' },
@@ -26,17 +32,29 @@ export async function POST(request: NextRequest) {
     // The webhook should have already updated the database,
     // but let's verify the subscription exists
     const supabase = createClient();
-    const { data: subscription } = await supabase
+    
+    if (!session.subscription) {
+      console.log('No subscription in session, payment might be for a one-time purchase');
+      return NextResponse.json({ success: true });
+    }
+
+    const { data: subscription, error: subError } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('stripe_subscription_id', session.subscription)
       .single();
 
-    if (!subscription) {
+    if (subError) {
+      console.error('Error fetching subscription:', subError);
       return NextResponse.json(
-        { error: 'Subscription not found' },
-        { status: 404 }
+        { error: 'Failed to verify subscription' },
+        { status: 500 }
       );
+    }
+
+    if (!subscription) {
+      console.log('Subscription not found in database, webhook might not have processed yet');
+      return NextResponse.json({ success: true });
     }
 
     return NextResponse.json({ success: true });

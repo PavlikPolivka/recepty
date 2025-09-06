@@ -179,6 +179,18 @@
     "recipesQuestion": "What happens to my recipes?",
     "recipesAnswer": "All your saved recipes are preserved when you upgrade or downgrade. You'll never lose your cookbook.",
     "trialQuestion": "Is there a free trial?",
-    "trialAnswer": "Yes! You can try the free plan with 3 recipes per day to see if you like the service before upgrading."
+    "trialAnswer": "Yes! You can try the free plan with 3 recipes per day to see if you like the service before upgrading.",
+    "basicRecipeParsing": "Basic recipe parsing",
+    "noCookbookAccess": "No cookbook access",
+    "noRecipeSaving": "No recipe saving",
+    "unlimitedRecipes": "Unlimited recipes per day",
+    "unlimitedCustomizations": "Unlimited customizations",
+    "advancedAIParsing": "Advanced AI parsing",
+    "fullCookbookAccess": "Full cookbook access",
+    "saveUnlimitedRecipes": "Save unlimited recipes",
+    "shareableRecipeLinks": "Shareable recipe links",
+    "prioritySupport": "Priority support",
+    "feature": "Feature",
+    "checkoutError": "Failed to start checkout process. Please try again."
   }
 }

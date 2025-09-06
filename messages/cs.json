@@ -179,6 +179,18 @@
     "recipesQuestion": "Co se stane s mými recepty?",
     "recipesAnswer": "Všechny vaše uložené recepty jsou zachovány při upgradu nebo downgradu. Nikdy nepřijdete o svou kuchařku.",
     "trialQuestion": "Je k dispozici zkušební verze?",
-    "trialAnswer": "Ano! Můžete vyzkoušet zdarma plán se 3 recepty denně, abyste viděli, zda se vám služba líbí, než upgradete."
+    "trialAnswer": "Ano! Můžete vyzkoušet zdarma plán se 3 recepty denně, abyste viděli, zda se vám služba líbí, než upgradete.",
+    "basicRecipeParsing": "Základní zpracování receptů",
+    "noCookbookAccess": "Žádný přístup k receptáři",
+    "noRecipeSaving": "Žádné ukládání receptů",
+    "unlimitedRecipes": "Neomezené recepty denně",
+    "unlimitedCustomizations": "Neomezené úpravy",
+    "advancedAIParsing": "Pokročilé AI zpracování",
+    "fullCookbookAccess": "Plný přístup k receptáři",
+    "saveUnlimitedRecipes": "Ukládejte neomezené recepty",
+    "shareableRecipeLinks": "Sdílené odkazy na recepty",
+    "prioritySupport": "Prioritní podpora",
+    "feature": "Funkce",
+    "checkoutError": "Nepodařilo se spustit proces platby. Zkuste to prosím znovu."
   }
 }

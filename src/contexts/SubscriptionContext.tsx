@@ -137,12 +137,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setLoading(false);
   }, [user]);
 
-  const canParseRecipe = subscription?.is_premium || (usage?.recipes_parsed || 0) < 3;
+  // Only allow premium features if subscription is active and premium
+  const isPremium = subscription?.is_premium && subscription?.status === 'active';
+  
+  const canParseRecipe = isPremium || (usage?.recipes_parsed || 0) < 3;
   const canUseCustomizations = (count: number) => 
-    subscription?.is_premium || (usage?.customizations_used || 0) + count <= 3;
+    isPremium || (usage?.customizations_used || 0) + count <= 3;
 
-  const maxRecipesPerDay = subscription?.is_premium ? 999999 : 3;
-  const maxCustomizationsPerDay = subscription?.is_premium ? 999999 : 3;
+  const maxRecipesPerDay = isPremium ? 999999 : 3;
+  const maxCustomizationsPerDay = isPremium ? 999999 : 3;
 
   const value: SubscriptionContextType = {
     subscription,

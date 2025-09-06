@@ -19,6 +19,21 @@ export default function HomePage() {
   const pathname = usePathname();
   const { user } = useAuth();
   const { subscription, usage, canParseRecipe, canUseCustomizations, maxRecipesPerDay, maxCustomizationsPerDay } = useSubscription();
+  
+  // Check if user has active premium subscription
+  const isPremium = subscription?.is_premium && subscription?.status === 'active';
+  
+  // Debug logging
+  useEffect(() => {
+    if (subscription) {
+      console.log('Subscription status:', {
+        is_premium: subscription.is_premium,
+        status: subscription.status,
+        plan: subscription.plan,
+        isPremium: isPremium
+      });
+    }
+  }, [subscription, isPremium]);
   const [url, setUrl] = useState('');
   const [instructions, setInstructions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -226,7 +241,7 @@ export default function HomePage() {
           {/* Usage Display */}
           {user && usage && (
             <div className="bg-white border border-gray-200 rounded-lg p-6 max-w-2xl mx-auto mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Today's Usage</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Today&apos;s Usage</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">
@@ -241,7 +256,7 @@ export default function HomePage() {
                                        <div className="text-sm text-gray-600">{t('home.customizationsUsed')}</div>
                 </div>
               </div>
-              {!subscription?.is_premium && (
+              {!isPremium && (
                 <div className="mt-4 text-center">
                   <Link 
                     href={`/${currentLocale}/upgrade`}
@@ -315,13 +330,13 @@ export default function HomePage() {
                 <h3 className="text-2xl font-bold text-gray-900">
                   {t('home.savedRecipes.title')}
                 </h3>
-                {!subscription?.is_premium && (
+                {!isPremium && (
                   <span className="bg-orange-100 text-orange-800 text-xs font-medium px-2 py-1 rounded-full">
                     {t('home.premium')}
                   </span>
                 )}
               </div>
-              {savedRecipes.length > 0 && subscription?.is_premium && (
+              {savedRecipes.length > 0 && isPremium && (
                 <button
                   onClick={() => router.push(`/${currentLocale}/cookbook`)}
                   className="text-orange-600 hover:text-orange-700 font-medium"
@@ -336,7 +351,7 @@ export default function HomePage() {
                 <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
                 <span className="ml-2 text-gray-600">{t('common.loading')}</span>
               </div>
-            ) : !subscription?.is_premium ? (
+            ) : !isPremium ? (
               <div className="text-center py-8">
                 <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg mb-4">

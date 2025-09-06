@@ -33,7 +33,7 @@ export default function UpgradePage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        alert('Please sign in to upgrade');
+        alert(t('home.signInToUpgrade'));
         return;
       }
 
@@ -66,7 +66,7 @@ export default function UpgradePage() {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      alert('Failed to start checkout process. Please try again.');
+      alert(t('upgrade.checkoutError'));
     } finally {
       setCheckoutLoading(false);
     }

@@ -15,6 +15,9 @@ export default function RecipePage() {
   const router = useRouter();
   const { user } = useAuth();
   const { subscription } = useSubscription();
+  
+  // Check if user has active premium subscription
+  const isPremium = subscription?.is_premium && subscription?.status === 'active';
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -172,7 +175,7 @@ export default function RecipePage() {
                 <span>{t('recipe.print')}</span>
               </button>
               
-              {subscription?.is_premium && (
+              {isPremium && (
                 <button
                   onClick={handleSave}
                   disabled={saving}

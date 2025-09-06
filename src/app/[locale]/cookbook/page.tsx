@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ChefHat, Plus, Trash2, Eye, Search, X } from 'lucide-react';
 import { SavedRecipe } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { createClient } from '@/lib/supabase/client';
 
 export default function CookbookPage() {
@@ -13,6 +14,10 @@ export default function CookbookPage() {
   const locale = useLocale();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { subscription, loading: subscriptionLoading } = useSubscription();
+  
+  // Check if user has active premium subscription
+  const isPremium = subscription?.is_premium && subscription?.status === 'active';
   const [recipes, setRecipes] = useState<SavedRecipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -95,7 +100,7 @@ export default function CookbookPage() {
     }
   };
 
-  if (authLoading || loading) {
+  if (authLoading || loading || subscriptionLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -122,6 +127,31 @@ export default function CookbookPage() {
             className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors"
           >
             {t('auth.signIn')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <ChefHat className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            {t('cookbook.title')}
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {t('home.cookbookRequiresPremium')}
+          </p>
+          <p className="text-gray-500 mb-6">
+            {t('home.upgradeToSaveUnlimited')}
+          </p>
+          <button
+            onClick={() => router.push(`/${locale}/upgrade`)}
+            className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors"
+          >
+            {t('home.upgradeToPremium')}
           </button>
         </div>
       </div>

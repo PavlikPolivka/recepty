@@ -2,12 +2,12 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { ChefHat, CheckCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import AuthButton from '@/components/AuthButton';
 
-export default function SuccessPage() {
+function SuccessContent() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
@@ -152,5 +152,17 @@ export default function SuccessPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }

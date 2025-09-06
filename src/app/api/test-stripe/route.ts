@@ -4,7 +4,21 @@ import { stripe, STRIPE_PRICE_ID } from '@/lib/stripe';
 export async function GET(request: NextRequest) {
   try {
     // Test if Stripe is configured correctly
-    const testData = {
+    const testData: {
+      stripeConfigured: boolean;
+      priceId: string;
+      priceIdValid: boolean | "";
+      webhookSecret: boolean;
+      publishableKey: boolean;
+      priceExists?: boolean;
+      priceDetails?: {
+        id: string;
+        active: boolean;
+        unit_amount: number | null;
+        currency: string;
+      };
+      priceError?: string;
+    } = {
       stripeConfigured: !!process.env.STRIPE_SECRET_KEY,
       priceId: STRIPE_PRICE_ID,
       priceIdValid: STRIPE_PRICE_ID && STRIPE_PRICE_ID.startsWith('price_'),

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe';
-import { createClient } from '@/lib/supabase/client';
+import { createServiceClient } from '@/lib/supabase/service';
 import Stripe from 'stripe';
 
 export async function POST(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const supabase = createClient();
+  const supabase = createServiceClient();
 
   console.log(`🔔 Received Stripe webhook: ${event.type}`);
 
@@ -59,9 +59,7 @@ export async function POST(request: NextRequest) {
 
         console.log('Retrieved subscription:', {
           id: subscription.id,
-          status: subscription.status,
-          current_period_start: subscription.current_period_start,
-          current_period_end: subscription.current_period_end
+          status: subscription.status
         });
 
         // Update or create subscription in database
@@ -73,8 +71,8 @@ export async function POST(request: NextRequest) {
             stripe_subscription_id: subscription.id,
             status: 'active',
             plan: 'premium',
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: null,
+            current_period_end: null,
           });
 
         if (upsertError) {
@@ -97,16 +95,28 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (existingSub) {
+          // Map Stripe status to our status
+          let mappedStatus = subscription.status;
+          if (subscription.status === 'canceled') {
+            mappedStatus = 'canceled';
+          } else if (subscription.status === 'active') {
+            mappedStatus = 'active';
+          } else if (subscription.status === 'past_due') {
+            mappedStatus = 'past_due';
+          } else {
+            mappedStatus = 'canceled';
+          }
+
           await supabase
             .from('subscriptions')
             .update({
-              status: subscription.status,
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              status: mappedStatus,
+              current_period_start: null,
+              current_period_end: null,
             })
             .eq('stripe_subscription_id', subscription.id);
 
-          console.log(`Subscription updated for user ${existingSub.user_id}`);
+          console.log(`Subscription updated for user ${existingSub.user_id}: ${mappedStatus}`);
         }
         break;
       }
@@ -137,12 +147,12 @@ export async function POST(request: NextRequest) {
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
         
-        if (invoice.subscription) {
+        if ((invoice as any).subscription) {
           // Find user by subscription ID
           const { data: existingSub } = await supabase
             .from('subscriptions')
             .select('user_id')
-            .eq('stripe_subscription_id', invoice.subscription as string)
+            .eq('stripe_subscription_id', (invoice as any).subscription as string)
             .single();
 
           if (existingSub) {
@@ -153,7 +163,7 @@ export async function POST(request: NextRequest) {
                 status: 'active',
                 plan: 'premium',
               })
-              .eq('stripe_subscription_id', invoice.subscription as string);
+              .eq('stripe_subscription_id', (invoice as any).subscription as string);
 
             console.log(`Payment succeeded for user ${existingSub.user_id}`);
           }
@@ -171,12 +181,12 @@ export async function POST(request: NextRequest) {
           status: invoice.status
         });
         
-        if (invoice.subscription) {
+        if ((invoice as any).subscription) {
           // Find user by subscription ID
           const { data: existingSub } = await supabase
             .from('subscriptions')
             .select('user_id')
-            .eq('stripe_subscription_id', invoice.subscription as string)
+            .eq('stripe_subscription_id', (invoice as any).subscription as string)
             .single();
 
           if (existingSub) {
@@ -187,7 +197,7 @@ export async function POST(request: NextRequest) {
                 status: 'active',
                 plan: 'premium',
               })
-              .eq('stripe_subscription_id', invoice.subscription as string);
+              .eq('stripe_subscription_id', (invoice as any).subscription as string);
 
             if (error) {
               console.error('Error updating subscription:', error);
@@ -195,7 +205,7 @@ export async function POST(request: NextRequest) {
               console.log(`✅ Payment paid for user ${existingSub.user_id}`);
             }
           } else {
-            console.log('No existing subscription found for invoice:', invoice.subscription);
+            console.log('No existing subscription found for invoice:', (invoice as any).subscription);
           }
         }
         break;
@@ -204,12 +214,12 @@ export async function POST(request: NextRequest) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         
-        if (invoice.subscription) {
+        if ((invoice as any).subscription) {
           // Find user by subscription ID
           const { data: existingSub } = await supabase
             .from('subscriptions')
             .select('user_id')
-            .eq('stripe_subscription_id', invoice.subscription as string)
+            .eq('stripe_subscription_id', (invoice as any).subscription as string)
             .single();
 
           if (existingSub) {
@@ -219,7 +229,7 @@ export async function POST(request: NextRequest) {
               .update({
                 status: 'past_due',
               })
-              .eq('stripe_subscription_id', invoice.subscription as string);
+              .eq('stripe_subscription_id', (invoice as any).subscription as string);
 
             console.log(`Payment failed for user ${existingSub.user_id}`);
           }

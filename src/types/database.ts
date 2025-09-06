@@ -187,6 +187,8 @@ export interface RecipeStep {
 }
 
 export interface ParsedRecipe {
+  id?: string;
+  user_id?: string;
   title: string;
   image?: string;
   ingredients: Ingredient[];

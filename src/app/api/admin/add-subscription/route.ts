@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/client';
-
-// Simple admin key check
-const ADMIN_KEY = process.env.ADMIN_KEY || 'your-secret-admin-key';
+import { createServiceClient } from '@/lib/supabase/service';
+import { isUserAdmin } from '@/lib/admin';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, adminKey, stripeCustomerId, stripeSubscriptionId } = await request.json();
-
-    // Verify admin key
-    if (adminKey !== ADMIN_KEY) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const { userId, stripeCustomerId, stripeSubscriptionId } = await request.json();
 
     if (!userId) {
       return NextResponse.json(
@@ -23,7 +13,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createClient();
+    // Get the authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    // Verify the token and get user
+    const supabase = createServiceClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is admin
+    const isAdmin = await isUserAdmin(user.id);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
 
     // Add subscription manually
     const { data, error } = await supabase

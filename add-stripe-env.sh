@@ -11,8 +11,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key_here
 STRIPE_PRICE_ID=price_your_stripe_price_id_here
 STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret_here
 
-# Admin
-ADMIN_KEY=your-secret-admin-key-here
+# Admin access is now controlled via database (no env var needed)
 EOF
 
 echo "✅ Stripe environment variables added to .env.local"

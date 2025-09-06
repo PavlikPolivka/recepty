@@ -49,7 +49,7 @@ export async function isAdminUserByEmail(email: string | undefined): Promise<boo
 }
 
 // Legacy function for backward compatibility
-export function isAdminUser(email: string | undefined): boolean {
+export function isAdminUser(): boolean {
   // This is now async, but we'll keep it for compatibility
   // The actual check should be done in the API routes
   console.warn('isAdminUser is deprecated, use isAdminUserByEmail instead');

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseRecipeFromUrl } from '@/lib/recipe-parser';
 import { createClient } from '@/lib/supabase/client';
-import { headers } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   let url = '';

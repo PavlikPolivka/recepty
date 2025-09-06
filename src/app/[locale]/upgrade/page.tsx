@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
-import { ChefHat, Check, Star, Zap, Shield, Crown, Loader2 } from 'lucide-react';
+import { ChefHat, Check, Star, Zap, Crown, Loader2 } from 'lucide-react';
 import AuthButton from '@/components/AuthButton';
 import { useState } from 'react';
 import stripePromise from '@/lib/stripe-client';

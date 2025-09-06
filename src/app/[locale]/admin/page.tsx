@@ -1,25 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSubscription } from '@/contexts/SubscriptionContext';
-import { ChefHat, Crown, CheckCircle, Shield, UserPlus, Search } from 'lucide-react';
+import { ChefHat, Crown, CheckCircle, Shield, Search } from 'lucide-react';
 import AuthButton from '@/components/AuthButton';
-import { isAdminUserByEmail } from '@/lib/admin';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AdminPage() {
-  const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { user } = useAuth();
-  const { subscription } = useSubscription();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [addSubLoading, setAddSubLoading] = useState(false);
-  const [targetEmail, setTargetEmail] = useState('');
   const [targetUserId, setTargetUserId] = useState('');
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [adminLoading, setAdminLoading] = useState(true);

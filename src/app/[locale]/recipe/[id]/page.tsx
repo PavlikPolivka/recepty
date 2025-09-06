@@ -16,7 +16,7 @@ export default function ShareableRecipePage({ params }: RecipePageProps) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -31,13 +31,13 @@ export default function ShareableRecipePage({ params }: RecipePageProps) {
         const resolvedParams = await params;
         const supabase = createClient();
         
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('recipes')
           .select('*')
           .eq('id', resolvedParams.id)
           .single();
 
-        if (error) {
+        if (fetchError) {
           setError('Recipe not found');
           return;
         }
@@ -58,7 +58,7 @@ export default function ShareableRecipePage({ params }: RecipePageProps) {
         } else {
           setError('Recipe not found');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load recipe');
       } finally {
         setLoading(false);
@@ -99,8 +99,7 @@ export default function ShareableRecipePage({ params }: RecipePageProps) {
         // Fallback to copying URL
         await navigator.clipboard.writeText(window.location.href);
       }
-    } catch (err) {
-      console.error('Error sharing recipe:', err);
+    } catch {
       // Silent fail for share errors
     }
   };
@@ -119,15 +118,15 @@ export default function ShareableRecipePage({ params }: RecipePageProps) {
       
       try {
         const supabase = createClient();
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('recipes')
           .update({ title: editedTitle.trim() })
           .eq('id', recipe.id)
           .eq('user_id', user.id);
 
-        if (error) throw error;
-      } catch (error) {
-        console.error('Error updating recipe title:', error);
+        if (updateError) throw updateError;
+      } catch (updateError) {
+        console.error('Error updating recipe title:', updateError);
         // Revert the change on error
         setRecipe(recipe);
       }

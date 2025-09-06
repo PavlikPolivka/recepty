@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { stripe, STRIPE_PRICE_ID } from '@/lib/stripe';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Test if Stripe is configured correctly
     const testData: {

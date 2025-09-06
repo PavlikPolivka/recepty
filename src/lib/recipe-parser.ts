@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ParsedRecipe, Ingredient, RecipeStep } from '@/types/database';
+import { ParsedRecipe } from '@/types/database';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -17,7 +17,6 @@ export async function parseRecipeFromUrl(url: string, locale: string = 'en', ins
     }
 
     const html = await response.text();
-    const $ = cheerio.load(html);
 
     // Always use Gemini AI parsing for consistent tag generation
     return await parseWithGemini(html, url, locale, instructions);

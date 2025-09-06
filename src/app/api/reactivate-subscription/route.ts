@@ -3,6 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import { stripe } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/supabase/service';
 
+// Extended Stripe subscription type for properties not in main types
+interface StripeSubscriptionExtended {
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+  status: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('Authorization');
@@ -58,10 +65,11 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    const reactivatedSubExtended = reactivatedSubscription as unknown as StripeSubscriptionExtended;
     console.log('Reactivated subscription:', {
       subscriptionId: subscription.stripe_subscription_id,
-      cancelAtPeriodEnd: reactivatedSubscription.cancel_at_period_end,
-      status: reactivatedSubscription.status
+      cancelAtPeriodEnd: reactivatedSubExtended.cancel_at_period_end,
+      status: reactivatedSubExtended.status
     });
 
     // Update the subscription in our database
@@ -69,8 +77,8 @@ export async function POST(request: NextRequest) {
       .from('subscriptions')
       .update({
         cancel_at_period_end: false,
-        current_period_end: reactivatedSubscription.current_period_end
-          ? new Date(reactivatedSubscription.current_period_end * 1000).toISOString()
+        current_period_end: reactivatedSubExtended.current_period_end
+          ? new Date(reactivatedSubExtended.current_period_end * 1000).toISOString()
           : null,
         updated_at: new Date().toISOString()
       })

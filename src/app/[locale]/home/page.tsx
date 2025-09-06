@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ChefHat, Globe, Loader2, Eye, Trash2, BookOpen } from 'lucide-react';
@@ -14,7 +14,6 @@ import { SavedRecipe } from '@/types/database';
 
 export default function HomePage() {
   const t = useTranslations();
-  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();

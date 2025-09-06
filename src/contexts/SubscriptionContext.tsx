@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 
@@ -10,6 +10,7 @@ interface SubscriptionData {
   plan: string;
   current_period_end: string | null;
   cancel_at_period_end: boolean | null;
+  updated_at: string;
 }
 
 interface UsageData {
@@ -36,6 +37,71 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+
+  const refreshSubscription = useCallback(async () => {
+    if (!user) {
+      setSubscription(null);
+      return;
+    }
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc('get_user_subscription', {
+        user_uuid: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching subscription:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setSubscription(data[0]);
+      } else {
+        // Default to free plan if no subscription found
+        setSubscription({
+          is_premium: false,
+          status: 'inactive',
+          plan: 'free',
+          current_period_end: null,
+          cancel_at_period_end: false,
+          updated_at: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing subscription:', error);
+    }
+  }, [user]);
+
+  const refreshUsage = useCallback(async () => {
+    if (!user) {
+      setUsage(null);
+      return;
+    }
+
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc('get_user_daily_usage', {
+        user_uuid: user.id
+      });
+
+      if (error) {
+        console.error('Error fetching usage:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        setUsage(data[0]);
+      } else {
+        setUsage({
+          recipes_parsed: 0,
+          customizations_used: 0
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing usage:', error);
+    }
+  }, [user]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -65,70 +131,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return () => {
       authSubscription.unsubscribe();
     };
-  }, []);
-
-  const refreshSubscription = async () => {
-    if (!user) {
-      setSubscription(null);
-      return;
-    }
-
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase.rpc('get_user_subscription', {
-        user_uuid: user.id
-      });
-
-      if (error) {
-        console.error('Error fetching subscription:', error);
-        return;
-      }
-
-      if (data && data.length > 0) {
-        setSubscription(data[0]);
-      } else {
-        // Default to free plan if no subscription found
-        setSubscription({
-          is_premium: false,
-          status: 'inactive',
-          plan: 'free',
-          current_period_end: null
-        });
-      }
-    } catch (error) {
-      console.error('Error refreshing subscription:', error);
-    }
-  };
-
-  const refreshUsage = async () => {
-    if (!user) {
-      setUsage(null);
-      return;
-    }
-
-    try {
-      const supabase = createClient();
-      const { data, error } = await supabase.rpc('get_user_daily_usage', {
-        user_uuid: user.id
-      });
-
-      if (error) {
-        console.error('Error fetching usage:', error);
-        return;
-      }
-
-      if (data && data.length > 0) {
-        setUsage(data[0]);
-      } else {
-        setUsage({
-          recipes_parsed: 0,
-          customizations_used: 0
-        });
-      }
-    } catch (error) {
-      console.error('Error refreshing usage:', error);
-    }
-  };
+  }, [refreshSubscription, refreshUsage]);
 
   useEffect(() => {
     if (user) {
@@ -136,7 +139,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       refreshUsage();
     }
     setLoading(false);
-  }, [user]);
+  }, [user, refreshSubscription, refreshUsage]);
 
   // Only allow premium features if subscription is active and premium
   const isPremium = subscription?.is_premium && subscription?.status === 'active';

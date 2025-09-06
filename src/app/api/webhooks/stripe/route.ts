@@ -3,6 +3,17 @@ import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe';
 import { createServiceClient } from '@/lib/supabase/service';
 import Stripe from 'stripe';
 
+// Extended Stripe types for properties not in the main types
+interface StripeSubscriptionExtended {
+  current_period_start: number;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+}
+
+interface StripeInvoiceExtended {
+  subscription: string;
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get('stripe-signature');
@@ -57,12 +68,13 @@ export async function POST(request: NextRequest) {
         // Get the subscription from Stripe
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
 
+        const subExtended = subscription as unknown as Stripe.Subscription & StripeSubscriptionExtended;
         console.log('Retrieved subscription:', {
           id: subscription.id,
           status: subscription.status,
-          current_period_start: (subscription as any).current_period_start,
-          current_period_end: (subscription as any).current_period_end,
-          cancel_at_period_end: (subscription as any).cancel_at_period_end
+          current_period_start: subExtended.current_period_start,
+          current_period_end: subExtended.current_period_end,
+          cancel_at_period_end: subExtended.cancel_at_period_end
         });
 
         // Update or create subscription in database
@@ -74,11 +86,11 @@ export async function POST(request: NextRequest) {
             stripe_subscription_id: subscription.id,
             status: 'active',
             plan: 'premium',
-            current_period_start: (subscription as any).current_period_start
-              ? new Date((subscription as any).current_period_start * 1000).toISOString()
+            current_period_start: subExtended.current_period_start
+              ? new Date(subExtended.current_period_start * 1000).toISOString()
               : null,
-            current_period_end: (subscription as any).current_period_end
-              ? new Date((subscription as any).current_period_end * 1000).toISOString()
+            current_period_end: subExtended.current_period_end
+              ? new Date(subExtended.current_period_end * 1000).toISOString()
               : null,
           });
 
@@ -93,13 +105,14 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
+        const subExtended = subscription as unknown as Stripe.Subscription & StripeSubscriptionExtended;
         
         console.log('Subscription updated event:', {
           id: subscription.id,
           status: subscription.status,
-          current_period_start: (subscription as any).current_period_start,
-          current_period_end: (subscription as any).current_period_end,
-          cancel_at_period_end: (subscription as any).cancel_at_period_end
+          current_period_start: subExtended.current_period_start,
+          current_period_end: subExtended.current_period_end,
+          cancel_at_period_end: subExtended.cancel_at_period_end
         });
         
         // Find user by subscription ID
@@ -126,11 +139,11 @@ export async function POST(request: NextRequest) {
             .from('subscriptions')
             .update({
               status: mappedStatus,
-              current_period_start: (subscription as any).current_period_start
-                ? new Date((subscription as any).current_period_start * 1000).toISOString()
+              current_period_start: subExtended.current_period_start
+                ? new Date(subExtended.current_period_start * 1000).toISOString()
                 : null,
-              current_period_end: (subscription as any).current_period_end
-                ? new Date((subscription as any).current_period_end * 1000).toISOString()
+              current_period_end: subExtended.current_period_end
+                ? new Date(subExtended.current_period_end * 1000).toISOString()
                 : null,
             })
             .eq('stripe_subscription_id', subscription.id);
@@ -165,13 +178,14 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice;
+        const invoiceExtended = invoice as unknown as Stripe.Invoice & StripeInvoiceExtended;
         
-        if ((invoice as any).subscription) {
+        if (invoiceExtended.subscription) {
           // Find user by subscription ID
           const { data: existingSub } = await supabase
             .from('subscriptions')
             .select('user_id')
-            .eq('stripe_subscription_id', (invoice as any).subscription as string)
+            .eq('stripe_subscription_id', invoiceExtended.subscription)
             .single();
 
           if (existingSub) {
@@ -182,7 +196,7 @@ export async function POST(request: NextRequest) {
                 status: 'active',
                 plan: 'premium',
               })
-              .eq('stripe_subscription_id', (invoice as any).subscription as string);
+              .eq('stripe_subscription_id', invoiceExtended.subscription);
 
             console.log(`Payment succeeded for user ${existingSub.user_id}`);
           }
@@ -193,13 +207,14 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
+        const invoiceExtended = invoice as unknown as Stripe.Invoice & StripeInvoiceExtended;
         
-        if ((invoice as any).subscription) {
+        if (invoiceExtended.subscription) {
           // Find user by subscription ID
           const { data: existingSub } = await supabase
             .from('subscriptions')
             .select('user_id')
-            .eq('stripe_subscription_id', (invoice as any).subscription as string)
+            .eq('stripe_subscription_id', invoiceExtended.subscription)
             .single();
 
           if (existingSub) {
@@ -209,7 +224,7 @@ export async function POST(request: NextRequest) {
               .update({
                 status: 'past_due',
               })
-              .eq('stripe_subscription_id', (invoice as any).subscription as string);
+              .eq('stripe_subscription_id', invoiceExtended.subscription);
 
             console.log(`Payment failed for user ${existingSub.user_id}`);
           }

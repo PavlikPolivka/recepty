@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslations } from 'next-intl';
-import { LogIn, LogOut, User } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 
 export default function AuthButton() {
   const { user, loading, signInWithGoogle, signOut } = useAuth();

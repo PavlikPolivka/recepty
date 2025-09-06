@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { hasPremiumAccess, canParseRecipe, canUseCustomizations, getMaxRecipesPerDay, getMaxCustomizationsPerDay } from '@/lib/premium';
@@ -39,6 +39,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [usage, setUsage] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const previousUserId = useRef<string | null>(null);
 
   const refreshSubscription = useCallback(async () => {
     if (!user) {
@@ -46,6 +47,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return;
     }
 
+    console.log('🔄 Refreshing subscription for user:', user.id);
     try {
       const supabase = createClient();
       const { data, error } = await supabase.rpc('get_user_subscription', {
@@ -58,9 +60,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       }
 
       if (data && data.length > 0) {
+        console.log('✅ Subscription data received:', data[0]);
         setSubscription(data[0]);
       } else {
-        // Default to free plan if no subscription found
+        console.log('📝 Setting default subscription for free user');
         setSubscription({
           is_premium: false,
           status: 'inactive',
@@ -73,7 +76,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     } catch (error) {
       console.error('Error refreshing subscription:', error);
     }
-  }, [user]);
+  }, [user?.id]); // Use user.id instead of user object
 
   const refreshUsage = useCallback(async () => {
     if (!user) {
@@ -81,6 +84,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       return;
     }
 
+    console.log('🔄 Refreshing usage for user:', user.id);
     try {
       const supabase = createClient();
       const { data, error } = await supabase.rpc('get_user_daily_usage', {
@@ -93,8 +97,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       }
 
       if (data && data.length > 0) {
+        console.log('✅ Usage data received:', data[0]);
         setUsage(data[0]);
       } else {
+        console.log('📝 Setting default usage for user');
         setUsage({
           recipes_parsed: 0,
           customizations_used: 0
@@ -103,7 +109,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     } catch (error) {
       console.error('Error refreshing usage:', error);
     }
-  }, [user]);
+  }, [user?.id]); // Use user.id instead of user object
 
   useEffect(() => {
     const supabase = createClient();
@@ -133,15 +139,24 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     return () => {
       authSubscription.unsubscribe();
     };
-  }, [refreshSubscription, refreshUsage]);
+  }, []); // Remove refreshSubscription and refreshUsage from dependencies
 
   useEffect(() => {
-    if (user) {
-      refreshSubscription();
-      refreshUsage();
+    const currentUserId = user?.id || null;
+    console.log('🔄 useEffect triggered - user changed:', currentUserId, 'previous:', previousUserId.current);
+    
+    // Only call functions if user ID actually changed
+    if (currentUserId !== previousUserId.current) {
+      previousUserId.current = currentUserId;
+      
+      if (user) {
+        console.log('📞 Calling refreshSubscription and refreshUsage');
+        refreshSubscription();
+        refreshUsage();
+      }
     }
     setLoading(false);
-  }, [user, refreshSubscription, refreshUsage]);
+  }, [user?.id]); // Only depend on user.id, not the functions
 
   // Use centralized premium access check
   const isPremium = hasPremiumAccess(subscription);

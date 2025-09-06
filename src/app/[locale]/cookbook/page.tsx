@@ -8,6 +8,7 @@ import { SavedRecipe } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { createClient } from '@/lib/supabase/client';
+import { hasPremiumAccess } from '@/lib/premium';
 
 export default function CookbookPage() {
   const t = useTranslations();
@@ -16,8 +17,8 @@ export default function CookbookPage() {
   const { user, loading: authLoading } = useAuth();
   const { subscription, loading: subscriptionLoading } = useSubscription();
   
-  // Check if user has active premium subscription or lifetime access
-  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
+  // Use centralized premium access check
+  const isPremium = hasPremiumAccess(subscription);
   const [recipes, setRecipes] = useState<SavedRecipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { hasPremiumAccess, canParseRecipe, canUseCustomizations, getMaxRecipesPerDay, getMaxCustomizationsPerDay } from '@/lib/premium';
 
 interface SubscriptionData {
   is_premium: boolean;
@@ -24,6 +25,7 @@ interface SubscriptionContextType {
   loading: boolean;
   refreshSubscription: () => Promise<void>;
   refreshUsage: () => Promise<void>;
+  isPremium: boolean;
   canParseRecipe: boolean;
   canUseCustomizations: (count: number) => boolean;
   maxRecipesPerDay: number;
@@ -141,15 +143,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setLoading(false);
   }, [user, refreshSubscription, refreshUsage]);
 
-  // Only allow premium features if subscription is active and premium, or if user has lifetime access
-  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
+  // Use centralized premium access check
+  const isPremium = hasPremiumAccess(subscription);
   
-  const canParseRecipe = isPremium || (usage?.recipes_parsed || 0) < 3;
-  const canUseCustomizations = (count: number) => 
-    isPremium || (usage?.customizations_used || 0) + count <= 3;
+  const canParseRecipeValue = canParseRecipe(subscription, usage);
+  const canUseCustomizationsValue = (count: number) => 
+    canUseCustomizations(subscription, usage, count);
 
-  const maxRecipesPerDay = isPremium ? 999999 : 3;
-  const maxCustomizationsPerDay = isPremium ? 999999 : 3;
+  const maxRecipesPerDay = getMaxRecipesPerDay(subscription);
+  const maxCustomizationsPerDay = getMaxCustomizationsPerDay(subscription);
 
   const value: SubscriptionContextType = {
     subscription,
@@ -157,8 +159,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     loading,
     refreshSubscription,
     refreshUsage,
-    canParseRecipe,
-    canUseCustomizations,
+    isPremium,
+    canParseRecipe: canParseRecipeValue,
+    canUseCustomizations: canUseCustomizationsValue,
     maxRecipesPerDay,
     maxCustomizationsPerDay,
   };

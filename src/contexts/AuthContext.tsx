@@ -58,9 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const supabase = createClient();
       
-      // Get current locale from URL
-      const currentLocale = window.location.pathname.split('/')[1] || 'cs';
-      
       // Force localhost redirect for development
       const redirectUrl = process.env.NODE_ENV === 'development' 
         ? `${window.location.origin}/auth/callback`
@@ -76,8 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
-          },
-          flowType: 'pkce'
+          }
         }
       });
       if (error) throw error;

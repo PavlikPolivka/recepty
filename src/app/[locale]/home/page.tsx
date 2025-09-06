@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { createClient } from '@/lib/supabase/client';
 import { SavedRecipe } from '@/types/database';
+import { hasPremiumAccess } from '@/lib/premium';
 
 export default function HomePage() {
   const t = useTranslations();
@@ -19,8 +20,8 @@ export default function HomePage() {
   const { user } = useAuth();
   const { subscription, usage, canParseRecipe, canUseCustomizations, maxRecipesPerDay, maxCustomizationsPerDay } = useSubscription();
   
-  // Check if user has active premium subscription or lifetime access
-  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
+  // Use centralized premium access check
+  const isPremium = hasPremiumAccess(subscription);
   
   // Debug logging
   useEffect(() => {

@@ -8,6 +8,7 @@ import { ParsedRecipe } from '@/types/database';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { createClient } from '@/lib/supabase/client';
+import { hasPremiumAccess } from '@/lib/premium';
 
 export default function RecipePage() {
   const t = useTranslations();
@@ -16,8 +17,8 @@ export default function RecipePage() {
   const { user } = useAuth();
   const { subscription } = useSubscription();
   
-  // Check if user has active premium subscription
-  const isPremium = (subscription?.is_premium && subscription?.status === 'active') || subscription?.plan === 'lifetime';
+  // Use centralized premium access check
+  const isPremium = hasPremiumAccess(subscription);
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const [checkedIngredients, setCheckedIngredients] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);

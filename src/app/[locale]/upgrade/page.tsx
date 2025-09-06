@@ -2,6 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { ChefHat, Check, Star, Zap, Shield, Crown, Loader2 } from 'lucide-react';
@@ -136,6 +137,14 @@ export default function UpgradePage() {
                   CS
                 </button>
               </div>
+              {user && (
+                <Link
+                  href={`/${locale}/account`}
+                  className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors"
+                >
+                  {t('account.title')}
+                </Link>
+              )}
               <AuthButton />
             </div>
           </div>

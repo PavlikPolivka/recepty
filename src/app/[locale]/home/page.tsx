@@ -215,6 +215,14 @@ export default function HomePage() {
                   CS
                 </button>
               </div>
+              {user && (
+                <Link
+                  href={`/${currentLocale}/account`}
+                  className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors"
+                >
+                  {t('account.title')}
+                </Link>
+              )}
               <AuthButton />
             </div>
           </div>

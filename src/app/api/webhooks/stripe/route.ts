@@ -59,7 +59,10 @@ export async function POST(request: NextRequest) {
 
         console.log('Retrieved subscription:', {
           id: subscription.id,
-          status: subscription.status
+          status: subscription.status,
+          current_period_start: (subscription as any).current_period_start,
+          current_period_end: (subscription as any).current_period_end,
+          cancel_at_period_end: (subscription as any).cancel_at_period_end
         });
 
         // Update or create subscription in database
@@ -71,8 +74,12 @@ export async function POST(request: NextRequest) {
             stripe_subscription_id: subscription.id,
             status: 'active',
             plan: 'premium',
-            current_period_start: null,
-            current_period_end: null,
+            current_period_start: (subscription as any).current_period_start
+              ? new Date((subscription as any).current_period_start * 1000).toISOString()
+              : null,
+            current_period_end: (subscription as any).current_period_end
+              ? new Date((subscription as any).current_period_end * 1000).toISOString()
+              : null,
           });
 
         if (upsertError) {
@@ -86,6 +93,14 @@ export async function POST(request: NextRequest) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
+        
+        console.log('Subscription updated event:', {
+          id: subscription.id,
+          status: subscription.status,
+          current_period_start: (subscription as any).current_period_start,
+          current_period_end: (subscription as any).current_period_end,
+          cancel_at_period_end: (subscription as any).cancel_at_period_end
+        });
         
         // Find user by subscription ID
         const { data: existingSub } = await supabase
@@ -111,8 +126,12 @@ export async function POST(request: NextRequest) {
             .from('subscriptions')
             .update({
               status: mappedStatus,
-              current_period_start: null,
-              current_period_end: null,
+              current_period_start: (subscription as any).current_period_start
+                ? new Date((subscription as any).current_period_start * 1000).toISOString()
+                : null,
+              current_period_end: (subscription as any).current_period_end
+                ? new Date((subscription as any).current_period_end * 1000).toISOString()
+                : null,
             })
             .eq('stripe_subscription_id', subscription.id);
 
@@ -171,45 +190,6 @@ export async function POST(request: NextRequest) {
         break;
       }
 
-      case 'invoice.payment_paid': {
-        const invoice = event.data.object as Stripe.Invoice;
-        
-        console.log('Invoice payment paid:', {
-          invoiceId: invoice.id,
-          subscriptionId: invoice.subscription,
-          amount: invoice.amount_paid,
-          status: invoice.status
-        });
-        
-        if ((invoice as any).subscription) {
-          // Find user by subscription ID
-          const { data: existingSub } = await supabase
-            .from('subscriptions')
-            .select('user_id')
-            .eq('stripe_subscription_id', (invoice as any).subscription as string)
-            .single();
-
-          if (existingSub) {
-            // Update subscription status to active
-            const { error } = await supabase
-              .from('subscriptions')
-              .update({
-                status: 'active',
-                plan: 'premium',
-              })
-              .eq('stripe_subscription_id', (invoice as any).subscription as string);
-
-            if (error) {
-              console.error('Error updating subscription:', error);
-            } else {
-              console.log(`✅ Payment paid for user ${existingSub.user_id}`);
-            }
-          } else {
-            console.log('No existing subscription found for invoice:', (invoice as any).subscription);
-          }
-        }
-        break;
-      }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
